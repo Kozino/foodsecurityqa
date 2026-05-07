@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qatar Food Security Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── PAGE SHELL ── */
+  html, body {
+    min-height: 100%;
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #0E0B10;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYERED BACKGROUND ── */
+  .bg-scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  /* Deep base gradient — deep maroon-to-midnight */
+  .bg-scene::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 15% 20%, #3A0A1A 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 85% 80%, #1A0820 0%, transparent 55%),
+      radial-gradient(ellipse 100% 80% at 50% 50%, #12080E 0%, #080510 100%);
+  }
+
+  /* Warm amber glow — like a distant port light */
+  .bg-scene::after {
+    content: '';
+    position: absolute;
+    width: 700px; height: 700px;
+    top: -200px; right: -150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(141,27,61,0.25) 0%, transparent 65%);
+    animation: drift1 18s ease-in-out infinite alternate;
+  }
+
+  @keyframes drift1 {
+    from { transform: translate(0,0) scale(1); }
+    to   { transform: translate(-60px, 80px) scale(1.12); }
+  }
+
+  /* Geometric grid — subtle map/chart reference */
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(141,27,61,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(141,27,61,0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 80%);
+  }
+
+  /* Diagonal accent stripe */
+  .bg-stripe {
+    position: absolute;
+    width: 2px;
+    height: 200%;
+    top: -50%;
+    left: 22%;
+    background: linear-gradient(to bottom, transparent, rgba(141,27,61,0.18) 40%, rgba(239,159,39,0.10) 60%, transparent);
+    transform: rotate(-15deg);
+    transform-origin: center;
+    animation: stripeGlow 6s ease-in-out infinite alternate;
+  }
+  .bg-stripe-2 {
+    position: absolute;
+    width: 1px;
+    height: 200%;
+    top: -50%;
+    left: 72%;
+    background: linear-gradient(to bottom, transparent, rgba(141,27,61,0.10) 50%, transparent);
+    transform: rotate(-15deg);
+    transform-origin: center;
+    animation: stripeGlow 9s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes stripeGlow {
+    from { opacity: 0.5; }
+    to   { opacity: 1; }
+  }
+
+  /* Floating orbs */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: orbFloat linear infinite;
+  }
+  .orb-1 {
+    width: 400px; height: 400px;
+    bottom: -80px; left: 5%;
+    background: radial-gradient(circle, rgba(99,26,50,0.3), transparent 70%);
+    animation-duration: 22s;
+    animation-direction: alternate;
+  }
+  .orb-2 {
+    width: 280px; height: 280px;
+    top: 30%; right: 8%;
+    background: radial-gradient(circle, rgba(239,159,39,0.08), transparent 70%);
+    animation-duration: 15s;
+    animation-direction: alternate-reverse;
+  }
+  .orb-3 {
+    width: 180px; height: 180px;
+    top: 10%; left: 38%;
+    background: radial-gradient(circle, rgba(141,27,61,0.15), transparent 70%);
+    animation-duration: 11s;
+    animation-direction: alternate;
+  }
+  @keyframes orbFloat {
+    from { transform: translate(0,0); }
+    to   { transform: translate(30px, -40px); }
+  }
+
+  /* Grain texture overlay */
+  .bg-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+  }
+
+  /* Horizon glow at bottom */
+  .bg-horizon {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 200px;
+    background: linear-gradient(to top, rgba(141,27,61,0.12), transparent);
+  }
+
+  /* ── CONTENT WRAPPER ── */
+  .page-wrap {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 40px 24px 60px;
+  }
+
+  /* Eyebrow label above dashboard */
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.1s ease forwards;
+  }
+  .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: #EF9F27; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+  .eyebrow-text { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.35); font-weight: 500; }
+
+  /* Dashboard card shadow & glow */
+  .dashboard-shell {
+    width: 100%;
+    max-width: 900px;
+    border-radius: 16px;
+    box-shadow:
+      0 0 0 1px rgba(141,27,61,0.3),
+      0 0 60px rgba(141,27,61,0.2),
+      0 32px 80px rgba(0,0,0,0.6),
+      0 4px 16px rgba(0,0,0,0.4);
+    opacity: 0;
+    animation: fadeUp 0.9s 0.25s cubic-bezier(0.2,0,0,1) forwards;
+    overflow: hidden;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ── CSS VAR BRIDGE (dashboard uses these) ── */
+  .dashboard-shell {
+    --color-background-primary: #FFFFFF;
+    --color-background-secondary: #F5F4F2;
+    --color-background-tertiary: #F0EDEA;
+    --color-border-tertiary: #E4E0DC;
+    --color-border-secondary: #D4CFC9;
+    --color-text-primary: #1A1614;
+    --color-text-secondary: #5C5550;
+    --color-text-tertiary: #8C8480;
+    --border-radius-lg: 12px;
+    --border-radius-md: 8px;
+  }
+
+  /* Footer credits */
+  .footer {
+    margin-top: 24px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.18);
+    letter-spacing: 0.04em;
+    text-align: center;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s ease forwards;
+  }
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND SCENE -->
+<div class="bg-scene">
+  <div class="bg-grid"></div>
+  <div class="bg-stripe"></div>
+  <div class="bg-stripe-2"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="bg-grain"></div>
+  <div class="bg-horizon"></div>
+</div>
+
+<!-- CONTENT -->
+<div class="page-wrap">
+
+  <div class="eyebrow">
+    <span class="eyebrow-dot"></span>
+    <span class="eyebrow-text">State of Qatar &nbsp;·&nbsp; Ministry of Commerce &amp; Industry &nbsp;·&nbsp; Live Dashboard</span>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       ORIGINAL DASHBOARD CODE — UNTOUCHED BELOW THIS LINE
+  ══════════════════════════════════════════════════════ -->
+  <div class="dashboard-shell">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.dash { background: var(--color-background-tertiary); min-height: 600px; border-radius: var(--border-radius-lg); overflow: hidden; }
+.topbar { background: #8D1B3D; padding: 0 16px; height: 48px; display: flex; align-items: center; justify-content: space-between; }
+.topbar-title { color: #fff; font-size: 14px; font-weight: 500; letter-spacing: 0.01em; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.lang-btn { background: rgba(255,255,255,0.18); border: none; color: #fff; font-size: 12px; padding: 4px 10px; border-radius: 20px; cursor: pointer; }
+.lang-btn:hover { background: rgba(255,255,255,0.28); }
+.alert-bell { position: relative; cursor: pointer; }
+.bell-dot { width: 7px; height: 7px; background: #EF9F27; border-radius: 50%; position: absolute; top: -2px; right: -2px; }
+.sidebar { background: var(--color-background-primary); border-right: 0.5px solid var(--color-border-tertiary); width: 44px; padding: 12px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.nav-icon { width: 32px; height: 32px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.nav-icon.active { background: #F3E8EC; }
+.nav-icon svg { width: 16px; height: 16px; }
+.body { display: flex; flex: 1; }
+.main { flex: 1; padding: 14px; overflow: hidden; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+.stat-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 12px; }
+.stat-val { font-size: 22px; font-weight: 500; color: var(--color-text-primary); line-height: 1.1; }
+.stat-lbl { font-size: 11px; color: var(--color-text-secondary); margin-top: 3px; }
+.stat-sub { font-size: 11px; margin-top: 2px; }
+.section-row { display: grid; grid-template-columns: 1fr 200px; gap: 10px; margin-bottom: 10px; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px; }
+.card-title { font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 10px; }
+.reserve-row { margin-bottom: 8px; }
+.res-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.res-name { font-size: 12px; color: var(--color-text-primary); }
+.res-days { font-size: 12px; font-weight: 500; }
+.bar-track { height: 8px; background: var(--color-background-secondary); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+.alert-item { padding: 8px; border-radius: var(--border-radius-md); margin-bottom: 6px; cursor: pointer; border: 0.5px solid transparent; transition: border-color 0.15s; }
+.alert-item:hover { border-color: var(--color-border-secondary); }
+.alert-item:last-child { margin-bottom: 0; }
+.alert-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.ship-row { display: grid; grid-template-columns: 1fr 60px 54px 54px; gap: 6px; padding: 6px 0; border-bottom: 0.5px solid var(--color-border-tertiary); align-items: center; }
+.ship-row:last-child { border-bottom: none; }
+.badge { display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 20px; }
+.bg { background: #EAF3DE; color: #27500A; }
+.ba { background: #FAEEDA; color: #633806; }
+.br { background: #FCEBEB; color: #791F1F; }
+.overlay { display: none; background: rgba(0,0,0,0.45); position: absolute; inset: 0; z-index: 10; align-items: center; justify-content: center; border-radius: var(--border-radius-lg); }
+.overlay.open { display: flex; }
+.modal { background: var(--color-background-primary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); width: 320px; overflow: hidden; }
+.modal-header { background: #FCEBEB; padding: 12px 14px; border-bottom: 0.5px solid #F7C1C1; }
+.modal-title { font-size: 14px; font-weight: 500; color: #791F1F; }
+.modal-sub { font-size: 12px; color: #A32D2D; margin-top: 2px; }
+.modal-body { padding: 14px; }
+.modal-stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; margin-bottom: 10px; }
+.modal-stat-val { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+.modal-stat-lbl { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+.modal-ship-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 12px; }
+.modal-ship-row:last-child { border-bottom: none; }
+.modal-actions { display: flex; gap: 8px; padding: 12px 14px; border-top: 0.5px solid var(--color-border-tertiary); }
+.btn-primary { flex: 1; background: #8D1B3D; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 8px; font-size: 13px; cursor: pointer; font-weight: 500; }
+.btn-primary:hover { background: #7a1634; }
+.btn-ghost { flex: 1; background: transparent; color: var(--color-text-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 8px; font-size: 13px; cursor: pointer; }
+.btn-ghost:hover { background: var(--color-background-secondary); }
+.notif-toast { display: none; position: absolute; bottom: 16px; right: 16px; background: #EAF3DE; border: 0.5px solid #97C459; border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 12px; color: #27500A; z-index: 20; }
+.notif-toast.show { display: block; }
+</style>
+
+<h2 class="sr-only">Interactive MOCI food security dashboard mockup for Qatar, showing reserve levels, active alerts, live shipments, and a clickable alert detail modal</h2>
+
+<div style="position:relative">
+<div class="dash">
+
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" fill="white" fill-opacity="0.9"/><rect x="13" y="3" width="8" height="8" rx="1.5" fill="white" fill-opacity="0.5"/><rect x="3" y="13" width="8" height="8" rx="1.5" fill="white" fill-opacity="0.5"/><rect x="13" y="13" width="8" height="8" rx="1.5" fill="white" fill-opacity="0.9"/></svg>
+      <span class="topbar-title">Qatar Food Security Platform — Ministry of Commerce & Industry</span>
+    </div>
+    <div class="topbar-right">
+      <button class="lang-btn" onclick="toggleLang()">العربية</button>
+      <div class="alert-bell" onclick="openAlert('protein')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="bell-dot"></div>
+      </div>
+      <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#fff">MO</div>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="sidebar">
+      <div class="nav-icon active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8D1B3D" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      </div>
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><path d="M21 10H3M16 2v4M8 2v4M3 6h18v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6z"/></svg>
+      </div>
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <div style="font-size:15px;font-weight:500;color:var(--color-text-primary)" id="page-title">National food security overview</div>
+          <div style="font-size:11px;color:var(--color-text-secondary)" id="page-sub">Thursday, 7 May 2026 · Live data</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div style="font-size:11px;color:var(--color-text-secondary)">Last updated 08:42</div>
+          <div style="width:7px;height:7px;border-radius:50%;background:#639922"></div>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-val">34</div>
+          <div class="stat-lbl">Avg. days of cover</div>
+          <div class="stat-sub" style="color:#639922">&#9650; +2 vs last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">47</div>
+          <div class="stat-lbl">Active shipments</div>
+          <div class="stat-sub" style="color:var(--color-text-secondary)">12 ports of origin</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer" onclick="openAlert('protein')">
+          <div class="stat-val" style="color:#E24B4A">2</div>
+          <div class="stat-lbl">Active alerts</div>
+          <div class="stat-sub" style="color:#A32D2D">Tap to view ↗</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">18</div>
+          <div class="stat-lbl">Importers tracked</div>
+          <div class="stat-sub" style="color:var(--color-text-secondary)">All reporting</div>
+        </div>
+      </div>
+
+      <div class="section-row">
+        <div class="card">
+          <div class="card-title" id="reserve-title">Strategic reserve — days of cover by category</div>
+
+          <div class="reserve-row">
+            <div class="res-label-row">
+              <span class="res-name" id="l-grains">Grains & cereals</span>
+              <span class="res-days" style="color:#27500A" id="v-grains">47 days</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:78%;background:#639922"></div></div>
+          </div>
+
+          <div class="reserve-row">
+            <div class="res-label-row">
+              <span class="res-name" id="l-dairy">Dairy products</span>
+              <span class="res-days" style="color:#633806" id="v-dairy">31 days</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:52%;background:#EF9F27"></div></div>
+          </div>
+
+          <div class="reserve-row" style="cursor:pointer" onclick="openAlert('protein')">
+            <div class="res-label-row">
+              <span class="res-name" id="l-protein">Protein & meat ⚠</span>
+              <span class="res-days" style="color:#A32D2D" id="v-protein">18 days</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:30%;background:#E24B4A"></div></div>
+            <div style="font-size:10px;color:#A32D2D;margin-top:3px" id="l-below">Below 20-day threshold — click to view alert</div>
+          </div>
+
+          <div class="reserve-row">
+            <div class="res-label-row">
+              <span class="res-name" id="l-produce">Fresh produce</span>
+              <span class="res-days" style="color:#633806" id="v-produce">24 days</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:40%;background:#EF9F27"></div></div>
+          </div>
+
+          <div class="reserve-row">
+            <div class="res-label-row">
+              <span class="res-name" id="l-sugar">Sugar & edible oils</span>
+              <span class="res-days" style="color:#27500A" id="v-sugar">52 days</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:87%;background:#639922"></div></div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:10px;padding-top:8px;border-top:0.5px solid var(--color-border-tertiary)">
+            <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:2px;background:#639922"></div><span style="font-size:10px;color:var(--color-text-secondary)" id="leg-safe">Safe (30+ days)</span></div>
+            <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:2px;background:#EF9F27"></div><span style="font-size:10px;color:var(--color-text-secondary)" id="leg-watch">Watch (20–30 days)</span></div>
+            <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:2px;background:#E24B4A"></div><span style="font-size:10px;color:var(--color-text-secondary)" id="leg-alert">Alert (&lt;20 days)</span></div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="card" style="flex:1">
+            <div class="card-title" id="alerts-title">Active alerts</div>
+            <div class="alert-item" style="background:#FCEBEB" onclick="openAlert('protein')">
+              <div style="display:flex;gap:7px;align-items:flex-start">
+                <div class="alert-dot" style="background:#E24B4A"></div>
+                <div>
+                  <div style="font-size:12px;font-weight:500;color:#791F1F" id="a1-title">Protein reserve critical</div>
+                  <div style="font-size:11px;color:#A32D2D;margin-top:1px" id="a1-sub">18 days · 3 shipments delayed</div>
+                </div>
+              </div>
+            </div>
+            <div class="alert-item" style="background:#FAEEDA" onclick="openAlert('dairy')">
+              <div style="display:flex;gap:7px;align-items:flex-start">
+                <div class="alert-dot" style="background:#EF9F27"></div>
+                <div>
+                  <div style="font-size:12px;font-weight:500;color:#633806" id="a2-title">Dairy approaching threshold</div>
+                  <div style="font-size:11px;color:#854F0B;margin-top:1px" id="a2-sub">31 days · trending down</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" id="imp-title">Top importers</div>
+            <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px" id="imp-sub">By active shipments</div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--color-text-primary)">Al Meera</span><span style="color:var(--color-text-secondary)">11 ships</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--color-text-primary)">Gulf Trading</span><span style="color:var(--color-text-secondary)">9 ships</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--color-text-primary)">Widam Food</span><span style="color:var(--color-text-secondary)">7 ships</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--color-text-primary)">LuLu Hypermarket</span><span style="color:var(--color-text-secondary)">6 ships</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="card-title" style="margin:0" id="ship-title">Live shipments in transit</div>
+          <div style="font-size:11px;color:var(--color-text-secondary)">Showing 5 of 47</div>
+        </div>
+        <div class="ship-row" style="border-bottom:0.5px solid var(--color-border-secondary)">
+          <div style="font-size:10px;font-weight:500;color:var(--color-text-tertiary)">VESSEL / COMMODITY</div>
+          <div style="font-size:10px;font-weight:500;color:var(--color-text-tertiary)">ORIGIN</div>
+          <div style="font-size:10px;font-weight:500;color:var(--color-text-tertiary)">ETA</div>
+          <div style="font-size:10px;font-weight:500;color:var(--color-text-tertiary)">STATUS</div>
+        </div>
+        <div class="ship-row">
+          <div><div style="font-size:12px;color:var(--color-text-primary)">MSC Beatrice</div><div style="font-size:11px;color:var(--color-text-secondary)">Grains · 2,400 MT</div></div>
+          <div style="font-size:12px;color:var(--color-text-secondary)">Rotterdam</div>
+          <div style="font-size:12px;color:var(--color-text-secondary)">May 12</div>
+          <div><span class="badge bg">On time</span></div>
+        </div>
+        <div class="ship-row" style="background:#FFF8F8">
+          <div><div style="font-size:12px;color:var(--color-text-primary)">Maersk Karachi</div><div style="font-size:11px;color:#A32D2D">Protein · 980 MT</div></div>
+          <div style="font-size:12px;color:var(--color-text-secondary)">Karachi</div>
+          <div style="font-size:12px;color:#A32D2D">May 17 +4d</div>
+          <div><span class="badge br">Delayed</span></div>
+        </div>
+        <div class="ship-row">
+          <div><div style="font-size:12px;color:var(--color-text-primary)">CMA CGM Qatar</div><div style="font-size:11px;color:var(--color-text-secondary)">Dairy · 1,100 MT</div></div>
+          <div style="font-size:12px;color:var(--color-text-secondary)">Jebel Ali</div>
+          <div style="font-size:12px;color:var(--color-text-secondary)">May 10</div>
+          <div><span class="badge bg">On time</span></div>
+        </div>
+        <div class="ship-row" style="background:#FFFCF5">
+          <div><div style="font-size:12px;color:var(--color-text-primary)">Ever Gentle</div><div style="font-size:11px;color:var(--color-text-secondary)">Sugar · 3,200 MT</div></div>
+          <div style="font-size:12px;color:var(--color-text-secondary)">Singapore</div>
+          <div style="font-size:12px;color:#854F0B">May 15 +1d</div>
+          <div><span class="badge ba">Minor delay</span></div>
+        </div>
+        <div class="ship-row">
+          <div><div style="font-size:12px;color:var(--color-text-primary)">Al Ghariya</div><div style="font-size:11px;color:var(--color-text-secondary)">Produce · 420 MT</div></div>
+          <div style="font-size:12px;color:var(--color-text-secondary)">Bandar Abbas</div>
+          <div style="font-size:12px;color:var(--color-text-secondary)">May 9</div>
+          <div><span class="badge bg">On time</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header" id="modal-header">
+      <div class="modal-title" id="modal-title">Protein reserve — critical alert</div>
+      <div class="modal-sub" id="modal-sub">Below 20-day national threshold · Triggered 06:14 today</div>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div class="modal-stat">
+          <div class="modal-stat-val" id="modal-cover" style="color:#E24B4A">18 days</div>
+          <div class="modal-stat-lbl">Current cover</div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-val" id="modal-impact">−4 days</div>
+          <div class="modal-stat-lbl">Delay impact</div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px" id="modal-ships-title">Delayed shipments</div>
+      <div id="modal-ships">
+        <div class="modal-ship-row"><span style="color:var(--color-text-primary)">Maersk Karachi</span><span class="badge br">+4 days</span></div>
+        <div class="modal-ship-row"><span style="color:var(--color-text-primary)">Hansa Stavanger</span><span class="badge br">+3 days</span></div>
+        <div class="modal-ship-row"><span style="color:var(--color-text-primary)">MSC Protein I</span><span class="badge ba">+1 day</span></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="notify-btn" onclick="sendNotification()">Notify importers</button>
+      <button class="btn-ghost" onclick="closeModal()">Dismiss</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif-toast" id="toast">
+  &#10003; 4 importers notified via SMS and email
+</div>
+</div>
+
+<script>
+var isArabic = false;
+
+var en = {
+  'page-title':'National food security overview',
+  'page-sub':'Thursday, 7 May 2026 · Live data',
+  'reserve-title':'Strategic reserve — days of cover by category',
+  'alerts-title':'Active alerts',
+  'imp-title':'Top importers','imp-sub':'By active shipments',
+  'ship-title':'Live shipments in transit',
+  'l-grains':'Grains & cereals','v-grains':'47 days',
+  'l-dairy':'Dairy products','v-dairy':'31 days',
+  'l-protein':'Protein & meat ⚠','v-protein':'18 days',
+  'l-produce':'Fresh produce','v-produce':'24 days',
+  'l-sugar':'Sugar & edible oils','v-sugar':'52 days',
+  'leg-safe':'Safe (30+ days)','leg-watch':'Watch (20–30 days)','leg-alert':'Alert (<20 days)',
+  'a1-title':'Protein reserve critical','a1-sub':'18 days · 3 shipments delayed',
+  'a2-title':'Dairy approaching threshold','a2-sub':'31 days · trending down',
+  'l-below':'Below 20-day threshold — click to view alert',
+};
+
+var ar = {
+  'page-title':'نظرة عامة على الأمن الغذائي الوطني',
+  'page-sub':'الخميس، 7 مايو 2026 · بيانات مباشرة',
+  'reserve-title':'الاحتياطي الاستراتيجي — أيام التغطية حسب الفئة',
+  'alerts-title':'التنبيهات النشطة',
+  'imp-title':'أبرز المستوردين','imp-sub':'حسب الشحنات النشطة',
+  'ship-title':'الشحنات الحية في العبور',
+  'l-grains':'الحبوب والحبوب','v-grains':'٤٧ يوماً',
+  'l-dairy':'منتجات الألبان','v-dairy':'٣١ يوماً',
+  'l-protein':'البروتين واللحوم ⚠','v-protein':'١٨ يوماً',
+  'l-produce':'المنتجات الطازجة','v-produce':'٢٤ يوماً',
+  'l-sugar':'السكر والزيوت الصالحة للأكل','v-sugar':'٥٢ يوماً',
+  'leg-safe':'آمن (+٣٠ يوماً)','leg-watch':'مراقبة (٢٠–٣٠)','leg-alert':'تنبيه (<٢٠ يوماً)',
+  'a1-title':'احتياطي البروتين حرج','a1-sub':'١٨ يوماً · ٣ شحنات متأخرة',
+  'a2-title':'الألبان تقترب من العتبة','a2-sub':'٣١ يوماً · في انخفاض',
+  'l-below':'أقل من العتبة ٢٠ يوماً — انقر لعرض التنبيه',
+};
+
+function toggleLang() {
+  isArabic = !isArabic;
+  var dict = isArabic ? ar : en;
+  var dir = isArabic ? 'rtl' : 'ltr';
+  document.querySelector('.dash').style.direction = dir;
+  document.querySelector('.lang-btn').textContent = isArabic ? 'English' : 'العربية';
+  Object.keys(dict).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = dict[id];
+  });
+}
+
+function openAlert(type) {
+  var overlay = document.getElementById('overlay');
+  overlay.classList.add('open');
+  if (type === 'dairy') {
+    document.getElementById('modal-header').style.background = '#FAEEDA';
+    document.getElementById('modal-header').style.borderBottomColor = '#FAC775';
+    document.getElementById('modal-title').style.color = '#633806';
+    document.getElementById('modal-title').textContent = 'Dairy products — watch alert';
+    document.getElementById('modal-sub').style.color = '#854F0B';
+    document.getElementById('modal-sub').textContent = 'Approaching 30-day threshold · Triggered 07:30 today';
+    document.getElementById('modal-cover').textContent = '31 days';
+    document.getElementById('modal-cover').style.color = '#EF9F27';
+    document.getElementById('modal-impact').textContent = '−3 days';
+    document.getElementById('modal-ships-title').textContent = 'At-risk shipments';
+    document.getElementById('modal-ships').innerHTML = '<div class="modal-ship-row"><span style="color:var(--color-text-primary)">CMA CGM Loire</span><span class="badge ba">Weather delay</span></div><div class="modal-ship-row"><span style="color:var(--color-text-primary)">MSC Dairy Express</span><span class="badge bg">On time</span></div>';
+    document.getElementById('notify-btn').textContent = 'Notify dairy importers';
+  } else {
+    document.getElementById('modal-header').style.background = '#FCEBEB';
+    document.getElementById('modal-header').style.borderBottomColor = '#F7C1C1';
+    document.getElementById('modal-title').style.color = '#791F1F';
+    document.getElementById('modal-title').textContent = 'Protein reserve — critical alert';
+    document.getElementById('modal-sub').style.color = '#A32D2D';
+    document.getElementById('modal-sub').textContent = 'Below 20-day national threshold · Triggered 06:14 today';
+    document.getElementById('modal-cover').textContent = '18 days';
+    document.getElementById('modal-cover').style.color = '#E24B4A';
+    document.getElementById('modal-impact').textContent = '−4 days';
+    document.getElementById('modal-ships-title').textContent = 'Delayed shipments';
+    document.getElementById('modal-ships').innerHTML = '<div class="modal-ship-row"><span style="color:var(--color-text-primary)">Maersk Karachi</span><span class="badge br">+4 days</span></div><div class="modal-ship-row"><span style="color:var(--color-text-primary)">Hansa Stavanger</span><span class="badge br">+3 days</span></div><div class="modal-ship-row"><span style="color:var(--color-text-primary)">MSC Protein I</span><span class="badge ba">+1 day</span></div>';
+    document.getElementById('notify-btn').textContent = 'Notify importers';
+  }
+}
+
+function closeOverlay(e) {
+  document.getElementById('overlay').classList.remove('open');
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+}
+
+function sendNotification() {
+  document.getElementById('overlay').classList.remove('open');
+  var toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(function(){ toast.classList.remove('show'); }, 3000);
+}
+</script>
+
+  </div><!-- /dashboard-shell -->
+
+  <div class="footer">State of Qatar &nbsp;·&nbsp; وزارة التجارة والصناعة &nbsp;·&nbsp; Secure Government Platform</div>
+
+</div><!-- /page-wrap -->
+
+</body>
+</html>
